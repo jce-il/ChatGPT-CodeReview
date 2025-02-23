@@ -85,7 +85,7 @@ export const robot = (app: Probot) => {
 
   
       const pull_description = pull_request.body;
-      const student_prompt = pull_description ? pull_description.match(/- Comments for the AI code reviewer:([\s\S]*)/) : null;
+      const student_prompt = pull_description ? pull_description.match(/Comments for the AI code reviewer:([\s\S]*)> [!IMPORTANT]/) : null;
 
       let { files: changedFiles, commits } = data.data;
 
