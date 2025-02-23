@@ -83,11 +83,16 @@ export const robot = (app: Probot) => {
         head: context.payload.pull_request.head.sha,
       });
 
+  
+      const pull_description = pull_request.body;
+      const student_prompt = pull_description ? pull_description.match(/- Comments for the AI code reviewer:([\s\S]*)/) : null;
+
       let { files: changedFiles, commits } = data.data;
 
       log.debug("compareCommits, base:", context.payload.pull_request.base.sha, "head:", context.payload.pull_request.head.sha)
       log.debug("compareCommits.commits:", commits)
       log.debug("compareCommits.files", changedFiles)
+      log.debug("student_prompt", student_prompt)
 
       if (context.payload.action === 'synchronize' && commits.length >= 2) {
         const {
@@ -155,7 +160,7 @@ export const robot = (app: Probot) => {
           continue;
         }
         try {
-          const res = await chat?.codeReview(patch);
+          const res = await chat?.codeReview(patch, student_prompt ? student_prompt[1] : '');
           if (!!res) {
             ress.push({
               path: file.filename,
@@ -172,7 +177,7 @@ export const robot = (app: Probot) => {
           repo: repo.repo,
           owner: repo.owner,
           pull_number: context.pullRequest().pull_number,
-          body: "Code review by ChatGPT",
+          body: "Code review for submisssion by ChatGPT",
           event: 'COMMENT',
           commit_id: commits[commits.length - 1].sha,
           comments: ress,

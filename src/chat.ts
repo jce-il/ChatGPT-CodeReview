@@ -26,27 +26,28 @@ export class Chat {
     }
   }
 
-  private generatePrompt = (patch: string) => {
+  private generatePrompt = (patch: string, student_prompt:string) => {
     const answerLanguage = process.env.LANGUAGE
         ? `Answer me in ${process.env.LANGUAGE},`
         : '';
 
     const prompt =
-        process.env.PROMPT ||
-        'Below is a code patch, please help me do a brief code review on it. Any bug risks and/or improvement suggestions are welcome:';
+        (process.env.PROMPT ||
+        'Below is a code patch, please help me do a brief code review on it. Any bug risks and/or improvement suggestions are welcome:') +
+        (student_prompt ? `\n\n Especially note the request: ${student_prompt}` : '');
 
     return `${prompt}, ${answerLanguage}:
   ${patch}
     `;
   };
 
-  public codeReview = async (patch: string) => {
+  public codeReview = async (patch: string, student_prompt: string) => {
     if (!patch) {
       return '';
     }
 
     console.time('code-review cost');
-    const prompt = this.generatePrompt(patch);
+    const prompt = this.generatePrompt(patch, student_prompt);
 
     const res = await this.openai.chat.completions.create({
       messages: [
